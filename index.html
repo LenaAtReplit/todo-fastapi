@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Todo App</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+  .container {
+    max-width: 600px;
+    margin: auto;
+    padding: 20px;
+  }
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+  ul li {
+    padding: 10px;
+    border: 1px solid #ddd;
+    margin-top: 5px;
+  }
+  .completed {
+    text-decoration: line-through;
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h1>ToDo App</h1>
+  <input type="text" id="todoName" placeholder="Add new todo">
+  <button onClick="createTodo()">Add</button>
+  <ul id="todoList"></ul>
+</div>
+
+<script>
+const apiUrl = '/todos';
+
+  async function fetchTodos() {
+  const response = await fetch(apiUrl);
+  const todos = await response.json();
+  console.log(todos);
+  const todoList = document.getElementById('todoList');
+  todoList.innerHTML = '';
+  todos.forEach((todo, index) => {
+    const li = document.createElement('li');
+    li.textContent = todo.name;
+    if (todo.completed) {
+      li.classList.add('completed');
+    }
+    li.onclick = () => toggleCompleted(index, todo);
+    todoList.appendChild(li);
+  });
+}
+
+async function createTodo() {
+  const name = document.getElementById('todoName').value;
+  const response = await fetch(apiUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ name, completed: false }),
+  });
+  if(response.ok) {
+    fetchTodos();
+    document.getElementById('todoName').value = ''; // Clear input
+  }
+}
+
+async function toggleCompleted(index, todo) {
+  const response = await fetch(`${apiUrl}/${index}`, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ ...todo, completed: !todo.completed }),
+  });
+  if(response.ok) {
+    fetchTodos();
+  }
+}
+
+</script>
+
+</body>
+</html>
